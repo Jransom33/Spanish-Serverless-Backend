@@ -1,3 +1,4 @@
+//creates the DynamoDB client object
 const { DynamoDBClient }  = require("@aws-sdk/client-dynamodb");
 const client  = new DynamoDBClient({});
 

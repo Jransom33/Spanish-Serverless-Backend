@@ -9,12 +9,15 @@ module.exports.handler = async (event) => {
     const response = {statusCode: 200}
 
     try{
+        //parses data from the request body of the event
         const body = JSON.parse(event.body);
         const params = {
             TableName: process.env.Lessons_Table,
             Item: marshall(body)
         }
+        //tries to create a new lesson in the Lessons_Table using the PutItemCommand
         const createResult = await dc.send(new PutItemCommand(params));
+        //if successful, returns a message saying so
         response.body = JSON.stringify({
             message: "Lesson successfully created",
             createResult: createResult,
@@ -22,6 +25,7 @@ module.exports.handler = async (event) => {
 
         });
     }
+    //if unsuccessful, returns an error message
     catch(err){
         console.error(err);
         response.statusCode = 500;
