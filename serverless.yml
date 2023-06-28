@@ -1,0 +1,78 @@
+service: Spanish-rest-api
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  region: us-east-1
+  httpApi:
+    cors: true
+  environment:
+    Lessons_Table: ${self:service}-customerTable-${sls:stage}
+
+plugins:
+  - serverless-iam-roles-per-function
+
+functions:
+  GetLessons:
+    handler: getLessons.handler
+    events:
+      - httpApi:
+          path: /Lessons/{lessonID}
+          method: get
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+        Resource: arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:service}-customerTable-${sls:stage}
+  # *** The following parts on commented out because the application only needs to get lessons from the database currently. ***
+  # createLessons:
+  #   handler: createLesson.handler
+  #   events:
+  #     - httpApi:
+  #         path: /createLessons
+  #         method: POST
+  #   iamRoleStatements:
+  #     - Effect: Allow
+  #       Action:
+  #         - dynamodb:PutItem
+  #       Resource: arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:service}-customerTable-${sls:stage}
+  # updateLessons:
+  #   handler: updateLesson.handler
+  #   events:
+  #     - httpApi:
+  #         path: /Lessons/{lessonID}
+  #         method: PUT
+  #   iamRoleStatements:
+  #     - Effect: Allow
+  #       Action:
+  #         - dynamodb:UpdateItem
+  #       Resource: arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:service}-customerTable-${sls:stage}
+  # deleteLessons:
+  #   handler: deleteLesson.handler
+  #   events:
+  #     - httpApi:
+  #         path: /Lessons/{lessonID}
+  #         method: DELETE
+  #   iamRoleStatements:
+  #     - Effect: Allow
+  #       Action:
+  #         - dynamodb:DeleteItem
+  #       Resource: arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:service}-customerTable-${sls:stage}
+
+
+resources:
+  Resources:
+    LessonsTable:
+      Type: AWS::DynamoDB::Table
+      DeletionPolicy: Retain
+      Properties:
+        AttributeDefinitions:
+          - AttributeName: lessonID
+            AttributeType: S
+        KeySchema:
+          - AttributeName: lessonID
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
+        TableName: ${self:service}-customerTable-${sls:stage}
+
